@@ -1,0 +1,27 @@
+{
+  "name": "stingray",
+  "version": "1.0.0",
+  "description": "WebGL raymarching",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ./public",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xRadne/stingray.git"
+  },
+  "keywords": [
+    "WebGL",
+    "Ray-Marching"
+  ],
+  "author": "xRadne epersson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xRadne/stingray/issues"
+  },
+  "homepage": "https://github.com/xRadne/stingray#readme",
+  "dependencies": {
+    "serve": "^11.0.0"
+  }
+}
