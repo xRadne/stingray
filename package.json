@@ -21,7 +21,9 @@
     "url": "https://github.com/xRadne/stingray/issues"
   },
   "homepage": "https://github.com/xRadne/stingray#readme",
-  "dependencies": {
-    "serve": "^11.0.0"
+  "dependencies": {},
+  "devDependencies": {
+    "serve": "^11.0.0",
+    "simple-hot-reload-server": "^1.2.0"
   }
 }
