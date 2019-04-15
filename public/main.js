@@ -44,15 +44,48 @@ attribute vec4 aVertexPosition;
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 
+varying vec3 rayTarget;
+
 void main() {
   gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+  rayTarget = aVertexPosition.xyz;
 }
 `;
 
 const fsSource = `
-    void main() {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+precision highp float;
+varying vec3 rayTarget;
+
+float SDF_sphere(vec3 p, vec4 sphere) {
+  return length(p - sphere.xyz) - sphere.w;
+}
+
+float march(vec3 rayOrigin, vec3 rayDirection, vec4 sphere) {
+  //int maxSteps = 20;
+  float t = 0.;
+  float minDist = 0.001;
+  float d;
+  for(int i = 0; i <= 20; i++) {
+    d = SDF_sphere(rayOrigin + t * rayDirection, sphere);
+    if (d < minDist) {
+      return 1.;
     }
+    t += d;
+  }
+  return 0.4;
+}
+
+  void main() {
+    vec3 rayOrigin = vec3(0., 0., -6.);
+    vec3 rayDirection = normalize(rayTarget - rayOrigin);
+    vec4 sphere = vec4(0., 0., 3., 1.);
+
+    float hit = march(rayOrigin, rayDirection, sphere);
+
+    //d = SDF_sphere(rayOrigin + t * rayDirection, sphere);
+
+    gl_FragColor = vec4(hit, hit, hit, 1.0);
+  }
   `;
 
 //
@@ -120,11 +153,11 @@ function initBuffers(gl) {
   // Now create an array of positions for the square.
 
   const positions = [
-    -1.0,  1.0,
-     1.0,  1.0,
-    -1.0, -1.0,
-     1.0, -1.0,
-  ];
+    2.0,  2.0,
+   -2.0,  2.0,
+    2.0, -2.0,
+   -2.0, -2.0,
+ ];
 
   // Now pass the list of positions into WebGL to build the
   // shape. We do this by creating a Float32Array from the
