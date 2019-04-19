@@ -17,27 +17,43 @@ function main() {
   // Clear the color buffer with specified clear color
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+  loadFragmentShader('./shaders/ray-marcher.glsl')
+  .then(fsSource => {
+    const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+  
+    const programInfo = {
+      program: shaderProgram,
+      attribLocations: {
+        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+      },
+      uniforms: {
+        sphere: [0., 0., 0., 1.],
+      },
+      uniformLocations: {
+        projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+        modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+        sphere: gl.getUniformLocation(shaderProgram, 'sphere'),
+      },
+    };
+  
+  
+    let buffer = initBuffers(gl);
+  
+    drawScene(gl, programInfo, buffer);
+  })
+}
 
-  const programInfo = {
-    program: shaderProgram,
-    attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-    },
-    uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-    },
-  };
-
-
-  let buffer = initBuffers(gl);
-
-  drawScene(gl, programInfo, buffer);
+function loadFragmentShader( fragmentUrl ) {
+  return new Promise((resolve, reject) => {
+    var req = new XMLHttpRequest();
+    req.addEventListener('load', e => resolve(e.target.responseText));
+    req.addEventListener('error', e => reject(e));
+    req.open( "GET", fragmentUrl );
+    req.send();
+  });
 }
 
 // Vertex shader program
-
 const vsSource = `
 attribute vec4 aVertexPosition;
 
@@ -51,42 +67,6 @@ void main() {
   rayTarget = aVertexPosition.xyz;
 }
 `;
-
-const fsSource = `
-precision highp float;
-varying vec3 rayTarget;
-
-float SDF_sphere(vec3 p, vec4 sphere) {
-  return length(p - sphere.xyz) - sphere.w;
-}
-
-float march(vec3 rayOrigin, vec3 rayDirection, vec4 sphere) {
-  //int maxSteps = 20;
-  float t = 0.;
-  float minDist = 0.001;
-  float d;
-  for(int i = 0; i <= 20; i++) {
-    d = SDF_sphere(rayOrigin + t * rayDirection, sphere);
-    if (d < minDist) {
-      return 1.;
-    }
-    t += d;
-  }
-  return 0.4;
-}
-
-  void main() {
-    vec3 rayOrigin = vec3(0., 0., -6.);
-    vec3 rayDirection = normalize(rayTarget - rayOrigin);
-    vec4 sphere = vec4(0., 0., 3., 1.);
-
-    float hit = march(rayOrigin, rayDirection, sphere);
-
-    //d = SDF_sphere(rayOrigin + t * rayDirection, sphere);
-
-    gl_FragColor = vec4(hit, hit, hit, 1.0);
-  }
-  `;
 
 //
 // Initialize a shader program, so WebGL knows how to draw our data
@@ -249,6 +229,13 @@ function drawScene(gl, programInfo, buffers) {
       programInfo.uniformLocations.modelViewMatrix,
       false,
       modelViewMatrix);
+  gl.uniform4f(
+    programInfo.uniformLocations.sphere, 
+    ...programInfo.uniforms.sphere);
+    //programInfo.uniforms.sphere[0],
+    //programInfo.uniforms.sphere[1],
+    //programInfo.uniforms.sphere[2],
+    //programInfo.uniforms.sphere[3]);
 
   {
     const offset = 0;
