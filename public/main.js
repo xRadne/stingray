@@ -1,6 +1,38 @@
 document.addEventListener("DOMContentLoaded", main);
 
+var Module;
+
+async function loadModel() {
+  return new Promise((resolve, reject) => {
+    var req = new XMLHttpRequest();
+    req.open("GET", "https://files.mcneel.com/rhino3dm/models/RhinoLogo.3dm");
+    req.responseType = "arraybuffer";
+    req.addEventListener("loadend", (responseText) => {
+      longInt8View = new Uint8Array(req.response);
+      var model = Module.File3dm.fromByteArray(longInt8View);
+      resolve(model);  
+    });
+    req.onerror = function() {
+      console.log("** An error occurred during the transaction");
+    }
+    req.send(null);
+  })
+} 
+
 function main() {
+  // load rhino3dm
+  rhino3dm()
+  .then((m) => {
+    Module = m;
+    console.log("rhino3dm loaded in our own code!");
+    var sphere = new Module.Sphere([250, 250, 0], 100);
+    console.log(sphere)
+  })
+  .then(loadModel)
+  .then(model => {
+    console.log('model: ', model);
+    console.log(model.objects())
+  })
 
   const canvas = document.getElementById("canvas");
   // Initialize the GL context
