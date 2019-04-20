@@ -13,7 +13,7 @@ function main() {
   }
 
   // Set clear color to black, fully opaque
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clearColor(0.0, 0.0, 0.0, .5);
   // Clear the color buffer with specified clear color
   gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -27,7 +27,7 @@ function main() {
         vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
       },
       uniforms: {
-        sphere: [0., 0., 0., 1.],
+        sphere: [0., 0., 0., 0.5],
       },
       uniformLocations: {
         projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -36,11 +36,11 @@ function main() {
       },
     };
   
-  
     let buffer = initBuffers(gl);
-  
+    
     drawScene(gl, programInfo, buffer);
   })
+  
 }
 
 function loadFragmentShader( fragmentUrl ) {
@@ -237,6 +237,13 @@ function drawScene(gl, programInfo, buffers) {
     //programInfo.uniforms.sphere[2],
     //programInfo.uniforms.sphere[3]);
 
+    // set('sphere', [0., 0., 0., 1.])
+    
+    
+    function set(paramName, data) {
+      const uniformLocation = gl.getUniformLocation(programInfo.program, paramName)
+      gl.uniform4f(uniformLocation, ...data);  
+    }
   {
     const offset = 0;
     const vertexCount = 4;
