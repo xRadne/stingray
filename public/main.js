@@ -21,7 +21,7 @@ function main() {
   .then(fsSource => {
     const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
   
-    const programInfo = {
+    var programInfo = {
       program: shaderProgram,
       attribLocations: {
         vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
@@ -37,10 +37,13 @@ function main() {
     };
   
     let buffer = initBuffers(gl);
-    
-    drawScene(gl, programInfo, buffer);
+    function update() {
+      programInfo.uniforms.sphere[0] += .001;
+      drawScene(gl, programInfo, buffer);
+      setTimeout(() => requestAnimationFrame(update), 100); // BE KIND TO YOUR GPU!
+    }
+    update();
   })
-  
 }
 
 function loadFragmentShader( fragmentUrl ) {
@@ -230,7 +233,7 @@ function drawScene(gl, programInfo, buffers) {
       false,
       modelViewMatrix);
   gl.uniform4f(
-    programInfo.uniformLocations.sphere, 
+    programInfo.uniformLocations.sphere,
     ...programInfo.uniforms.sphere);
     //programInfo.uniforms.sphere[0],
     //programInfo.uniforms.sphere[1],
